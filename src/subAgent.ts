@@ -11,7 +11,7 @@ import { tool } from "@langchain/core/tools";
 import { ToolMessage } from "@langchain/core/messages";
 import { Command, getCurrentTaskInput, LangGraphRunnableConfig, createReactAgent } from "@langchain/langgraph";
 import { z } from "zod";
-import type { SubAgent, DeepAgentStateType } from "./types.js";
+import type { SubAgent, DeepAgentStateType, TaskToolInput } from "./types.js";
 import type { DeepAgentState } from "./state.js";
 import { getDefaultModel } from "./model.js";
 import { 
@@ -143,4 +143,5 @@ export function createTaskTool(
     }
   );
 }
+
 
