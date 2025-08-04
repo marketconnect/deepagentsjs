@@ -6,16 +6,7 @@
  */
 
 import { Annotation, MessagesAnnotation } from "@langchain/langgraph";
-
-/**
- * Todo interface matching Python's TypedDict structure
- */
-export interface Todo {
-  /** Content of the todo item */
-  content: string;
-  /** Status of the todo - pending, in_progress, or completed */
-  status: 'pending' | 'in_progress' | 'completed';
-}
+import type { Todo } from "./types.js";
 
 /**
  * File reducer function that merges file dictionaries
@@ -68,4 +59,5 @@ export const DeepAgentState = Annotation.Root({
     default: () => ({}),
   }),
 });
+
 
