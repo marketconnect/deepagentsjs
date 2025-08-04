@@ -6,11 +6,16 @@
   "types": "dist/index.d.ts",
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "npm run clean && tsc",
+    "build:watch": "tsc --watch",
     "dev": "tsc --watch",
     "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
+    "lint": "echo \"Linting not configured yet\"",
     "prepublishOnly": "npm run clean && npm run build",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prepack": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node dist/index.js"
   },
   "repository": {
     "type": "git",
@@ -50,3 +55,4 @@
     "LICENSE"
   ]
 }
+
