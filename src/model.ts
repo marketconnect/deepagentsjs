@@ -1,11 +1,25 @@
 /**
  * Model configuration for Deep Agents
  * 
- * Default model configuration matching the Python implementation.
- * This file will be implemented in task 2.
+ * Default model configuration matching the Python implementation exactly.
+ * Returns a ChatAnthropic instance configured with claude-sonnet-4-20250514 and maxTokens: 64000.
  */
 
-// Placeholder - will be implemented in task 2
-export const getDefaultModel = () => {
-  throw new Error('getDefaultModel not yet implemented');
-};
+import { ChatAnthropic } from "@langchain/anthropic";
+
+/**
+ * Get the default model for Deep Agents
+ * 
+ * Returns a ChatAnthropic instance configured exactly like the Python version:
+ * - model: "claude-sonnet-4-20250514" 
+ * - maxTokens: 64000
+ * 
+ * @returns ChatAnthropic instance with default configuration
+ */
+export function getDefaultModel(): ChatAnthropic {
+  return new ChatAnthropic({
+    model: "claude-sonnet-4-20250514",
+    maxTokens: 64000,
+  });
+}
+
