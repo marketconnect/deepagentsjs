@@ -39,13 +39,14 @@
     "@langchain/langgraph": "^0.2.53",
     "@langchain/core": "^0.3.0",
     "@langchain/anthropic": "^0.3.0",
-    "zod": "^3.22.0"
+    "zod": "^3.25.32"
   },
   "devDependencies": {
-    "typescript": "^5.0.0",
-    "@types/node": "^20.0.0"
+    "typescript": "^5",
+    "@types/node": "^22.13.5",
+    "@tsconfig/recommended": "^1.0.8"
   },
-  "peerDependencies": {
+  "resolutions": {
     "@langchain/langgraph": ">=0.2.53",
     "@langchain/core": ">=0.3.0"
   },
@@ -53,6 +54,6 @@
     "dist/**/*",
     "README.md",
     "LICENSE"
-  ]
+  ],
+  "packageManager": "yarn@1.22.22"
 }
-
