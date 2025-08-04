@@ -2,6 +2,205 @@
  * Tool functions for Deep Agents
  * 
  * TypeScript versions of all tools using @langchain/core/tools tool() function.
+ * Uses getCurrentTaskInput() for state access and returns Command objects for state updates.
+ * Implements mock filesystem operations using state.files similar to Python version.
+ */
+
+import { tool } from "@langchain/core/tools";
+import { ToolMessage } from "@langchain/core/messages";
+import { Command, getCurrentTaskInput, LangGraphRunnableConfig } from "@langchain/langgraph";
+import { z } from "zod";
+import { Todo } from "./state.js";
+import { 
+  WRITE_TODOS_DESCRIPTION, 
+  EDIT_DESCRIPTION, 
+  TOOL_DESCRIPTION 
+} from "./prompts.js";
+import type { DeepAgentState } from "./state.js";
+
+/**
+ * Write todos tool - manages todo list with Command return
+ * Uses getCurrentTaskInput() instead of Python's InjectedState
+ */
+export const writeTodos = tool(
+  async (input: { todos: Todo[] }, config: LangGraphRunnableConfig) => {
+    const toolCallId = config.metadata?.tool_call_id || 'unknown';
+    
+    return new Command({
+      update: {
+        todos: input.todos,
+        messages: [
+          new ToolMessage({
+            content: `Updated todo list to ${JSON.stringify(input.todos)}`,
+            tool_call_id: toolCallId,
+          }),
+        ],
+      },
+    });
+  },
+  {
+    name: "write_todos",
+    description: WRITE_TODOS_DESCRIPTION,
+    schema: z.object({
+      todos: z.array(z.object({
+        content: z.string().describe("Content of the todo item"),
+        status: z.enum(['pending', 'in_progress', 'completed']).describe("Status of the todo"),
+      })).describe("List of todo items to update"),
+    }),
+  }
+);
+
+/**
+ * List files tool - returns list of files from state.files
+ * Equivalent to Python's ls function
+ */
+export const ls = tool(
+  async (_input: Record<string, never>) => {
+    const state = getCurrentTaskInput() as typeof DeepAgentState.State;
+    const files = state.files || {};
+    return Object.keys(files);
+  },
+  {
+    name: "ls",
+    description: "List all files in the mock filesystem",
+    schema: z.object({}),
+  }
+);
+
+/**
+ * Read file tool - reads from mock filesystem in state.files
+ * Matches Python read_file function behavior exactly
+ */
+export const readFile = tool(
+  async (input: { file_path: string; offset?: number; limit?: number }) => {
+    const state = getCurrentTaskInput() as typeof DeepAgentState.State;
+    const mockFilesystem = state.files || {};
+    const { file_path, offset = 0, limit = 2000 } = input;
+
+    if (!(file_path in mockFilesystem)) {
+      return `Error: File '${file_path}' not found`;
+    }
+
+    // Get file content
+    const content = mockFilesystem[file_path];
+
+    // Handle empty file
+    if (!content || content.trim() === "") {
+      return "System reminder: File exists but has empty contents";
+    }
+
+    // Split content into lines
+    const lines = content.split('\n');
+
+    // Apply line offset and limit
+    const startIdx = offset;
+    const endIdx = Math.min(startIdx + limit, lines.length);
+
+    // Handle case where offset is beyond file length
+    if (startIdx >= lines.length) {
+      return `Error: Line offset ${offset} exceeds file length (${lines.length} lines)`;
+    }
+
+    // Format output with line numbers (cat -n format)
+    const resultLines: string[] = [];
+    for (let i = startIdx; i < endIdx; i++) {
+      let lineContent = lines[i];
+
+      // Truncate lines longer than 2000 characters
+      if (lineContent.length > 2000) {
+        lineContent = lineContent.substring(0, 2000);
+      }
+
+      // Line numbers start at 1, so add 1 to the index
+      const lineNumber = i + 1;
+      resultLines.push(`${lineNumber.toString().padStart(6)}	${lineContent}`);
+    }
+
+    return resultLines.join('\n');
+  },
+  {
+    name: "read_file",
+    description: TOOL_DESCRIPTION,
+    schema: z.object({
+      file_path: z.string().describe("Absolute path to the file to read"),
+      offset: z.number().optional().default(0).describe("Line offset to start reading from"),
+      limit: z.number().optional().default(2000).describe("Maximum number of lines to read"),
+    }),
+  }
+);
+
+/**
+ * Write file tool - writes to mock filesystem with Command return
+ * Matches Python write_file function behavior exactly
+ */
+export const writeFile = tool(
+  async (input: { file_path: string; content: string }, config: LangGraphRunnableConfig) => {
+    const state = getCurrentTaskInput() as typeof DeepAgentState.State;
+    const files = { ...(state.files || {}) };
+    const toolCallId = config.metadata?.tool_call_id || 'unknown';
+    
+    files[input.file_path] = input.content;
+
+    return new Command({
+      update: {
+        files: files,
+        messages: [
+          new ToolMessage({
+            content: `Updated file ${input.file_path}`,
+            tool_call_id: toolCallId,
+          }),
+        ],
+      },
+    });
+  },
+  {
+    name: "write_file",
+    description: "Write content to a file in the mock filesystem",
+    schema: z.object({
+      file_path: z.string().describe("Absolute path to the file to write"),
+      content: z.string().describe("Content to write to the file"),
+    }),
+  }
+);
+
+/**
+ * Edit file tool - edits files in mock filesystem with Command return
+ * Matches Python edit_file function behavior exactly
+ */
+export const editFile = tool(
+  async (
+    input: { 
+      file_path: string; 
+      old_string: string; 
+      new_string: string; 
+      replace_all?: boolean 
+    }, 
+    config: LangGraphRunnableConfig
+  ) => {
+    const state = getCurrentTaskInput() as typeof DeepAgentState.State;
+    const mockFilesystem = { ...(state.files || {}) };
+    const toolCallId = config.metadata?.tool_call_id || 'unknown';
+    const { file_path, old_string, new_string, replace_all = false } = input;
+
+    // Check if file exists in mock filesystem
+    if (!(file_path in mockFilesystem)) {
+      return `Error: File '${file_path}' not found`;
+    }
+
+    // Get current file content
+    const content = mockFilesystem[file_path];
+
+    // Check if old_string exists in the file
+    if (!content.includes(old_string)) {
+      return `Error: String not found in file: '${old_string}'`;
+    }
+
+    // If not replace_all, check for uniqueness
+    if (!replace_all) {
+      const occurrences = (content.match(new RegExp(old_string.replace(/[.*+?^${}()|[\]\\]/g, '\\/**
+ * Tool functions for Deep Agents
+ * 
+ * TypeScript versions of all tools using @langchain/core/tools tool() function.
  * This file will be implemented in task 4.
  */
 
@@ -10,4 +209,75 @@ export const writeTodos = {} as any;
 export const readFile = {} as any;
 export const writeFile = {} as any;
 export const editFile = {} as any;
-export const ls = {} as any;
+export const ls = {} as any;'), 'g')) || []).length;
+      if (occurrences > 1) {
+        return `Error: String '${old_string}' appears ${occurrences} times in file. Use replace_all=True to replace all instances, or provide a more specific string with surrounding context.`;
+      } else if (occurrences === 0) {
+        return `Error: String not found in file: '${old_string}'`;
+      }
+    }
+
+    // Perform the replacement
+    let newContent: string;
+    let resultMsg: string;
+    
+    if (replace_all) {
+      const replacementCount = (content.match(new RegExp(old_string.replace(/[.*+?^${}()|[\]\\]/g, '\\/**
+ * Tool functions for Deep Agents
+ * 
+ * TypeScript versions of all tools using @langchain/core/tools tool() function.
+ * This file will be implemented in task 4.
+ */
+
+// Placeholder - will be implemented in task 4
+export const writeTodos = {} as any;
+export const readFile = {} as any;
+export const writeFile = {} as any;
+export const editFile = {} as any;
+export const ls = {} as any;'), 'g')) || []).length;
+      newContent = content.replace(new RegExp(old_string.replace(/[.*+?^${}()|[\]\\]/g, '\\/**
+ * Tool functions for Deep Agents
+ * 
+ * TypeScript versions of all tools using @langchain/core/tools tool() function.
+ * This file will be implemented in task 4.
+ */
+
+// Placeholder - will be implemented in task 4
+export const writeTodos = {} as any;
+export const readFile = {} as any;
+export const writeFile = {} as any;
+export const editFile = {} as any;
+export const ls = {} as any;'), 'g'), new_string);
+      resultMsg = `Successfully replaced ${replacementCount} instance(s) of the string in '${file_path}'`;
+    } else {
+      newContent = content.replace(old_string, new_string);
+      resultMsg = `Successfully replaced string in '${file_path}'`;
+    }
+
+    // Update the mock filesystem
+    mockFilesystem[file_path] = newContent;
+    
+    return new Command({
+      update: {
+        files: mockFilesystem,
+        messages: [
+          new ToolMessage({
+            content: `Updated file ${file_path}`,
+            tool_call_id: toolCallId,
+          }),
+        ],
+      },
+    });
+  },
+  {
+    name: "edit_file",
+    description: EDIT_DESCRIPTION,
+    schema: z.object({
+      file_path: z.string().describe("Absolute path to the file to edit"),
+      old_string: z.string().describe("String to be replaced (must match exactly)"),
+      new_string: z.string().describe("String to replace with"),
+      replace_all: z.boolean().optional().default(false).describe("Whether to replace all occurrences"),
+    }),
+  }
+);
+
