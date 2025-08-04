@@ -7,8 +7,7 @@
  * with proper configuration. Ensures exact parameter matching and behavior with Python version.
  */
 
-import { createReactAgent } from "@langchain/langgraph";
-import type { BaseLanguageModelInterface } from "@langchain/core/language_models/base";
+import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { createTaskTool } from "./subAgent.js";
 import { getDefaultModel } from "./model.js";
 import { DeepAgentState } from "./state.js";
@@ -19,7 +18,7 @@ import {
   editFile, 
   ls 
 } from "./tools.js";
-import type { SubAgent, StateSchemaType, CreateDeepAgentParams } from "./types.js";
+import type { StateSchemaType, CreateDeepAgentParams } from "./types.js";
 
 /**
  * Built-in tools that are always available in Deep Agents
@@ -62,13 +61,13 @@ export function createDeepAgent<T extends typeof DeepAgentState = typeof DeepAge
       }
     }
 
-    const taskTool = createTaskTool(subagents, toolsMap, model, stateSchema);
+    const taskTool = createTaskTool(subagents, toolsMap, model as any, stateSchema);
     allTools.push(taskTool);
   }
 
   // Return createReactAgent with proper configuration
   return createReactAgent({
-    llm: model,
+    llm: model as any,
     tools: allTools,
     stateSchema: stateSchema,
     messageModifier: instructions,

@@ -9,10 +9,11 @@
 
 import { tool } from "@langchain/core/tools";
 import { ToolMessage } from "@langchain/core/messages";
-import { Command, getCurrentTaskInput, LangGraphRunnableConfig, createReactAgent } from "@langchain/langgraph";
+import { Command, getCurrentTaskInput, LangGraphRunnableConfig } from "@langchain/langgraph";
+import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { z } from "zod";
-import type { SubAgent, DeepAgentStateType, TaskToolInput } from "./types.js";
-import type { DeepAgentState } from "./state.js";
+import type { SubAgent } from "./types.js";
+import { DeepAgentState } from "./state.js";
 import { getDefaultModel } from "./model.js";
 import { 
   writeTodos, 
@@ -71,7 +72,7 @@ export function createTaskTool(
       const subagentTools: any[] = [];
       if (subagent.tools) {
         for (const toolName of subagent.tools) {
-          const resolvedTool = allTools[toolName];
+          const resolvedTool = (allTools as Record<string, any>)[toolName];
           if (resolvedTool) {
             subagentTools.push(resolvedTool);
           } else {
@@ -112,7 +113,7 @@ export function createTaskTool(
             messages: [
               new ToolMessage({
                 content: `Completed task '${task}' using agent '${agent_name}'. Result: ${JSON.stringify(result.messages?.slice(-1)[0]?.content || 'Task completed')}`,
-                tool_call_id: toolCallId,
+                tool_call_id: toolCallId as string,
               }),
             ],
           },
@@ -126,7 +127,7 @@ export function createTaskTool(
             messages: [
               new ToolMessage({
                 content: `Error executing task '${task}' with agent '${agent_name}': ${errorMessage}`,
-                tool_call_id: toolCallId,
+                tool_call_id: toolCallId as string,
               }),
             ],
           },

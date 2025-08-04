@@ -2,8 +2,8 @@
   "extends": "@tsconfig/recommended",
   "compilerOptions": {
     "target": "ES2021",
-    "module": "NodeNext",
     "lib": ["ES2023"],
+    "module": "NodeNext",
     "moduleResolution": "nodenext",
     "esModuleInterop": true,
     "noImplicitReturns": true,
@@ -17,9 +17,11 @@
     "strict": true,
     "strictFunctionTypes": false,
     "outDir": "dist",
-    "types": ["node"],
-    "resolveJsonModule": true
+    "rootDir": ".",
+    "types": ["jest", "node"],
+    "resolveJsonModule": true,
+    "isolatedModules": true
   },
-  "include": ["**/*.ts"],
+  "include": ["**/*.ts", "**/*.js", "jest.setup.cjs"],
   "exclude": ["node_modules", "dist"]
 }

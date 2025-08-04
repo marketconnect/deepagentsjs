@@ -10,7 +10,6 @@ import { tool } from "@langchain/core/tools";
 import { ToolMessage } from "@langchain/core/messages";
 import { Command, getCurrentTaskInput, LangGraphRunnableConfig } from "@langchain/langgraph";
 import { z } from "zod";
-import type { Todo, WriteTodosInput, ReadFileInput, WriteFileInput, EditFileInput } from "./types.js";
 import { 
   WRITE_TODOS_DESCRIPTION, 
   EDIT_DESCRIPTION, 
@@ -23,16 +22,16 @@ import type { DeepAgentState } from "./state.js";
  * Uses getCurrentTaskInput() instead of Python's InjectedState
  */
 export const writeTodos = tool(
-  async (input: { todos: Todo[] }, config: LangGraphRunnableConfig) => {
+  (input, config: LangGraphRunnableConfig) => {
     const toolCallId = config.metadata?.tool_call_id || 'unknown';
     
-    return new Command({
+    return ({
       update: {
         todos: input.todos,
         messages: [
           new ToolMessage({
             content: `Updated todo list to ${JSON.stringify(input.todos)}`,
-            tool_call_id: toolCallId,
+            tool_call_id: toolCallId as string,
           }),
         ],
       },
@@ -55,7 +54,7 @@ export const writeTodos = tool(
  * Equivalent to Python's ls function
  */
 export const ls = tool(
-  async (_input: Record<string, never>) => {
+  (_input: Record<string, never>) => {
     const state = getCurrentTaskInput() as typeof DeepAgentState.State;
     const files = state.files || {};
     return Object.keys(files);
@@ -72,7 +71,7 @@ export const ls = tool(
  * Matches Python read_file function behavior exactly
  */
 export const readFile = tool(
-  async (input: { file_path: string; offset?: number; limit?: number }) => {
+  (input: { file_path: string; offset?: number; limit?: number }) => {
     const state = getCurrentTaskInput() as typeof DeepAgentState.State;
     const mockFilesystem = state.files || {};
     const { file_path, offset = 0, limit = 2000 } = input;
@@ -134,7 +133,7 @@ export const readFile = tool(
  * Matches Python write_file function behavior exactly
  */
 export const writeFile = tool(
-  async (input: { file_path: string; content: string }, config: LangGraphRunnableConfig) => {
+  (input: { file_path: string; content: string }, config: LangGraphRunnableConfig) => {
     const state = getCurrentTaskInput() as typeof DeepAgentState.State;
     const files = { ...(state.files || {}) };
     const toolCallId = config.metadata?.tool_call_id || 'unknown';
@@ -147,7 +146,7 @@ export const writeFile = tool(
         messages: [
           new ToolMessage({
             content: `Updated file ${input.file_path}`,
-            tool_call_id: toolCallId,
+            tool_call_id: toolCallId as string,
           }),
         ],
       },
@@ -168,7 +167,7 @@ export const writeFile = tool(
  * Matches Python edit_file function behavior exactly
  */
 export const editFile = tool(
-  async (
+  (
     input: { 
       file_path: string; 
       old_string: string; 
@@ -208,16 +207,12 @@ export const editFile = tool(
 
     // Perform the replacement
     let newContent: string;
-    let resultMsg: string;
     
     if (replace_all) {
       const escapedOldString = old_string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const replacementCount = (content.match(new RegExp(escapedOldString, 'g')) || []).length;
       newContent = content.replace(new RegExp(escapedOldString, 'g'), new_string);
-      resultMsg = `Successfully replaced ${replacementCount} instance(s) of the string in '${file_path}'`;
     } else {
       newContent = content.replace(old_string, new_string);
-      resultMsg = `Successfully replaced string in '${file_path}'`;
     }
 
     // Update the mock filesystem
@@ -229,7 +224,7 @@ export const editFile = tool(
         messages: [
           new ToolMessage({
             content: `Updated file ${file_path}`,
-            tool_call_id: toolCallId,
+            tool_call_id: toolCallId as string,
           }),
         ],
       },

@@ -17,7 +17,6 @@ export {
 } from './tools.js';
 export { 
   DeepAgentState, 
-  Todo, 
   fileReducer 
 } from './state.js';
 export { 
