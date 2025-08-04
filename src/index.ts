@@ -29,6 +29,20 @@ export {
 } from './prompts.js';
 export type { 
   SubAgent,
+  Todo,
   StateSchemaType,
-  DeepAgentStateType
+  DeepAgentStateType,
+  AnyStateSchema,
+  CreateDeepAgentParams,
+  CreateTaskToolParams,
+  DeepAgentTool,
+  MockFileSystem,
+  ReducerFunction,
+  TodoStatus,
+  WriteTodosInput,
+  ReadFileInput,
+  WriteFileInput,
+  EditFileInput,
+  TaskToolInput
 } from './types.js';
+
