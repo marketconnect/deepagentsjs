@@ -10,7 +10,7 @@ import { tool } from "@langchain/core/tools";
 import { ToolMessage } from "@langchain/core/messages";
 import { Command, getCurrentTaskInput, LangGraphRunnableConfig } from "@langchain/langgraph";
 import { z } from "zod";
-import { Todo } from "./state.js";
+import type { Todo, WriteTodosInput, ReadFileInput, WriteFileInput, EditFileInput } from "./types.js";
 import { 
   WRITE_TODOS_DESCRIPTION, 
   EDIT_DESCRIPTION, 
@@ -246,3 +246,4 @@ export const editFile = tool(
     }),
   }
 );
+
