@@ -19,7 +19,7 @@ import {
   editFile, 
   ls 
 } from "./tools.js";
-import type { SubAgent, StateSchemaType } from "./types.js";
+import type { SubAgent, StateSchemaType, CreateDeepAgentParams } from "./types.js";
 
 /**
  * Built-in tools that are always available in Deep Agents
@@ -31,22 +31,6 @@ const BUILTIN_TOOLS = [
   editFile,
   ls,
 ] as const;
-
-/**
- * Parameters for createDeepAgent function with TypeScript types
- */
-export interface CreateDeepAgentParams<T extends typeof DeepAgentState = typeof DeepAgentState> {
-  /** Additional tools to provide to the agent beyond built-in tools */
-  tools?: any[];
-  /** System instructions/prompt for the agent */
-  instructions?: string;
-  /** Language model to use (defaults to getDefaultModel()) */
-  model?: BaseLanguageModelInterface;
-  /** Sub-agents for specialized task handling */
-  subagents?: SubAgent[];
-  /** State schema class (defaults to DeepAgentState) */
-  stateSchema?: StateSchemaType<T>;
-}
 
 /**
  * Create a Deep Agent with TypeScript types for all parameters.
@@ -95,4 +79,5 @@ export function createDeepAgent<T extends typeof DeepAgentState = typeof DeepAge
  * Default export for convenience
  */
 export default createDeepAgent;
+
 
