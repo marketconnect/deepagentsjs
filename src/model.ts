@@ -12,13 +12,13 @@ import { ChatAnthropic } from "@langchain/anthropic";
  *
  * Returns a ChatAnthropic instance configured exactly like the Python version:
  * - model: "claude-sonnet-4-20250514"
- * - maxTokens: 64000
+ * - maxTokens: 4096
  *
  * @returns ChatAnthropic instance with default configuration
  */
 export function getDefaultModel(): ChatAnthropic {
   return new ChatAnthropic({
     model: "claude-sonnet-4-20250514",
-    maxTokens: 4096, // Reduced from 64000 to prevent timeout issues
+    maxTokens: 4096,
   });
 }
