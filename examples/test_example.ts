@@ -2,22 +2,12 @@
  * Simple test example for Deep Agents TypeScript with LangSmith tracing
  */
 
-import { createDeepAgent } from './src/graph.js';
+import { createDeepAgent } from '../src/graph.js';
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
-import { createReactAgent } from "@langchain/langgraph/prebuilt";
-import { Client } from "langsmith";
 import dotenv from 'dotenv';
 
 dotenv.config();
-// Initialize LangSmith client
-const client = new Client({
-  apiUrl: process.env.LANGCHAIN_ENDPOINT || "https://api.smith.langchain.com",
-  apiKey: process.env.LANGCHAIN_API_KEY,
-});
-
-// Set up tracing
-process.env.LANGCHAIN_TRACING_V2 = "true";
 
 // Simple custom tool
 const helloTool = tool(

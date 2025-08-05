@@ -14,6 +14,7 @@ import { DeepAgentState } from "./state.js";
 import { writeTodos, readFile, writeFile, editFile, ls } from "./tools.js";
 import type { StateSchemaType, CreateDeepAgentParams } from "./types.js";
 import type { StructuredTool } from "@langchain/core/tools";
+import type { LanguageModelLike } from "@langchain/core/language_models/base";
 
 /**
  * Built-in tools that are always available in Deep Agents
@@ -66,7 +67,7 @@ export function createDeepAgent<
 
   // Return createReactAgent with proper configuration
   return createReactAgent({
-    llm: model as any,
+    llm: model as LanguageModelLike,
     tools: allTools,
     stateSchema: stateSchema,
     messageModifier: instructions,
