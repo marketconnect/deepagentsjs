@@ -50,7 +50,6 @@ export function createDeepAgent<T extends typeof DeepAgentState = typeof DeepAge
 
   // Combine built-in tools with provided tools
   const allTools = [...BUILTIN_TOOLS, ...tools];
-
   // Create task tool using createTaskTool() if subagents are provided
   if (subagents.length > 0) {
     // Create tools map for task tool creation
