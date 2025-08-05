@@ -19,7 +19,7 @@ import { ChatAnthropic } from "@langchain/anthropic";
 export function getDefaultModel(): ChatAnthropic {
   return new ChatAnthropic({
     model: "claude-sonnet-4-20250514",
-    maxTokens: 64000,
+    maxTokens: 4096, // Reduced from 64000 to prevent timeout issues
   });
 }
 
