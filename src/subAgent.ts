@@ -7,7 +7,7 @@
  * and returns a tool function that uses createReactAgent for sub-agents.
  */
 
-import { tool } from "@langchain/core/tools";
+import { tool, StructuredTool } from "@langchain/core/tools";
 import { ToolMessage } from "@langchain/core/messages";
 import { Command, getCurrentTaskInput } from "@langchain/langgraph";
 import { ToolRunnableConfig } from "@langchain/core/tools";
@@ -27,13 +27,13 @@ import {
 /**
  * Built-in tools map for tool resolution by name
  */
-const BUILTIN_TOOLS = {
+const BUILTIN_TOOLS: Record<string, StructuredTool> = {
   'write_todos': writeTodos,
   'read_file': readFile,
   'write_file': writeFile,
   'edit_file': editFile,
   'ls': ls,
-} as const;
+};
 
 /**
  * Create task tool function that creates agents map, handles tool resolution by name,
@@ -42,7 +42,7 @@ const BUILTIN_TOOLS = {
  */
 export function createTaskTool(
   subagents: SubAgent[],
-  tools: Record<string, any> = {},
+  tools: Record<string, StructuredTool> = {},
   model = getDefaultModel(),
   stateSchema = DeepAgentState
 ) {
@@ -69,10 +69,10 @@ export function createTaskTool(
       }
 
       // Resolve tools by name for this subagent
-      const subagentTools: any[] = [];
+      const subagentTools: StructuredTool[] = [];
       if (subagent.tools) {
         for (const toolName of subagent.tools) {
-          const resolvedTool = (allTools as Record<string, any>)[toolName];
+          const resolvedTool = allTools[toolName];
           if (resolvedTool) {
             subagentTools.push(resolvedTool);
           } else {

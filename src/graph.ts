@@ -19,17 +19,18 @@ import {
   ls 
 } from "./tools.js";
 import type { StateSchemaType, CreateDeepAgentParams } from "./types.js";
+import type { StructuredTool } from "@langchain/core/tools";
 
 /**
  * Built-in tools that are always available in Deep Agents
  */
-const BUILTIN_TOOLS = [
+const BUILTIN_TOOLS: StructuredTool[] = [
   writeTodos,
   readFile,
   writeFile,
   editFile,
   ls,
-] as const;
+];
 
 /**
  * Create a Deep Agent with TypeScript types for all parameters.
@@ -49,11 +50,11 @@ export function createDeepAgent<T extends typeof DeepAgentState = typeof DeepAge
   } = params;
 
   // Combine built-in tools with provided tools
-  const allTools = [...BUILTIN_TOOLS, ...tools];
+  const allTools: StructuredTool[] = [...BUILTIN_TOOLS, ...tools];
   // Create task tool using createTaskTool() if subagents are provided
   if (subagents.length > 0) {
     // Create tools map for task tool creation
-    const toolsMap: Record<string, any> = {};
+    const toolsMap: Record<string, StructuredTool> = {};
     for (const tool of allTools) {
       if (tool.name) {
         toolsMap[tool.name] = tool;
