@@ -3,6 +3,7 @@ import { createDeepAgent } from "../src/index.js";
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
 import "dotenv/config";
+import { TavilySearch } from "@langchain/tavily";
 
 type Topic = "general" | "news" | "finance";
 
@@ -25,24 +26,15 @@ const internetSearch = tool(
 
     // Note: You'll need to install and import tavily-js or similar package
     // For now, this is a placeholder that shows the structure
-    const response = await fetch("https://api.tavily.com/search", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.TAVILY_API_KEY}`,
-      },
-      body: JSON.stringify({
-        query,
-        max_results: maxResults,
-        include_raw_content: includeRawContent,
-        topic,
-      }),
+    const tavilySearch = new TavilySearch({
+      maxResults,
+      tavilyApiKey: process.env.TAVILY_API_KEY,
+      includeRawContent,
+      topic,
     });
-    if (!response.ok) {
-      throw new Error(`Search failed: ${response.statusText}`);
-    }
+    const tavilyResponse = await tavilySearch.invoke({ query });
 
-    return await response.json();
+    return tavilyResponse;
   },
   {
     name: "internet_search",

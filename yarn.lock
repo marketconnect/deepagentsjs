@@ -159,6 +159,13 @@
     uuid "^10.0.0"
     zod "^3.25.32"
 
+"@langchain/tavily@^0.1.4":
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/@langchain/tavily/-/tavily-0.1.4.tgz#5f42dd6ed2552e72d06b6d6365fc7d7de398a2d2"
+  integrity sha512-8hlZYMmqZ7oVsH9G8eq6hXq8UTgwmrXAUP6MZXNN+31SPCkFn31dK8JyEA1OI9paC6Rcgc2XMT36oy7tARKOwA==
+  dependencies:
+    zod "^3.25.32"
+
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
   resolved "https://registry.yarnpkg.com/@nodelib/fs.scandir/-/fs.scandir-2.1.5.tgz#7619c2eb21b25483f6d167548b4cfd5a7488c3d5"
