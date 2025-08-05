@@ -5,8 +5,11 @@
  * Defines Todo interface and DeepAgentState using MessagesAnnotation as base with proper reducer functions.
  */
 
-import { Annotation, MessagesAnnotation } from "@langchain/langgraph";
+import "@langchain/langgraph/zod";
+import { MessagesZodState } from "@langchain/langgraph";
 import type { Todo } from "./types.js";
+import { withLangGraph } from "@langchain/langgraph/zod";
+import { z } from "zod";
 
 /**
  * File reducer function that merges file dictionaries
@@ -43,19 +46,18 @@ export function todoReducer(
  * DeepAgentState using LangGraph's Annotation.Root() pattern
  * Extends MessagesAnnotation (equivalent to Python's AgentState) with todos and files channels
  */
-export const DeepAgentState = Annotation.Root({
-  // Inherit all fields from MessagesAnnotation (messages channel with proper reducer)
-  ...MessagesAnnotation.spec,
-
-  // Add todos channel - optional list of Todo items
-  todos: Annotation<Todo[]>({
-    reducer: todoReducer,
-    default: () => [],
+export const DeepAgentState = MessagesZodState.extend({
+  todos: withLangGraph(z.custom<Todo[]>(), {
+    reducer: {
+      schema: z.custom<Todo[]>(),
+      fn: todoReducer,
+    },
   }),
 
-  // Add files channel - optional dictionary of file paths to content
-  files: Annotation<Record<string, string>>({
-    reducer: fileReducer,
-    default: () => ({}),
+  files: withLangGraph(z.custom<Record<string, string>>(), {
+    reducer: {
+      schema: z.custom<Record<string, string>>(),
+      fn: fileReducer,
+    },
   }),
 });

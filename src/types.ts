@@ -7,9 +7,17 @@
  * and proper generic types for state schemas.
  */
 
-import type { BaseLanguageModelInterface } from "@langchain/core/language_models/base";
+import type {
+  BaseLanguageModelInput,
+  LanguageModelOutput,
+} from "@langchain/core/language_models/base";
 import type { StructuredTool } from "@langchain/core/tools";
 import type { DeepAgentState } from "./state.js";
+import { z } from "zod";
+import { Runnable } from "@langchain/core/runnables";
+
+export type InferZodObjectShape<T> =
+  T extends z.ZodObject<infer Shape> ? Shape : never;
 
 /**
  * SubAgent interface matching Python's TypedDict structure
@@ -21,85 +29,41 @@ export interface SubAgent {
   tools?: string[];
 }
 
+export type TodoStatus = "pending" | "in_progress" | "completed";
+
 export interface Todo {
   content: string;
-  status: "pending" | "in_progress" | "completed";
+  status: TodoStatus;
 }
 
-/**
- * Type for state schema classes that extend DeepAgentState
- */
-export type StateSchemaType<
-  T extends typeof DeepAgentState = typeof DeepAgentState,
-> = T;
+export type DeepAgentStateType = z.infer<typeof DeepAgentState>;
 
-/**
- * Extract the state type from a state schema
- */
-export type DeepAgentStateType = typeof DeepAgentState.State;
-
-/**
- * Generic type for any state schema that extends DeepAgentState
- */
-export type AnyStateSchema = StateSchemaType<any>;
+export type LanguageModelLike = Runnable<
+  BaseLanguageModelInput,
+  LanguageModelOutput
+>;
 
 /**
  * Parameters for createDeepAgent function with TypeScript types
  */
 export interface CreateDeepAgentParams<
-  T extends typeof DeepAgentState = typeof DeepAgentState,
+  StateSchema extends z.ZodObject<any, any, any, any, any>,
 > {
   tools?: StructuredTool[];
   instructions?: string;
-  model?: BaseLanguageModelInterface;
+  model?: LanguageModelLike;
   subagents?: SubAgent[];
-  stateSchema?: StateSchemaType<T>;
+  stateSchema?: StateSchema;
 }
 
 /**
  * Parameters for createTaskTool function
  */
-export interface CreateTaskToolParams {
+export interface CreateTaskToolParams<
+  StateSchema extends z.ZodObject<any, any, any, any, any>,
+> {
   subagents: SubAgent[];
   tools?: Record<string, StructuredTool>;
-  model?: BaseLanguageModelInterface;
-  stateSchema?: StateSchemaType<any>;
-}
-
-export type DeepAgentTool = StructuredTool;
-
-export type MockFileSystem = Record<string, string>;
-
-export type ReducerFunction<T> = (
-  _prev: T | null | undefined,
-  _next: T | null | undefined,
-) => T;
-
-export type TodoStatus = "pending" | "in_progress" | "completed";
-
-export interface WriteTodosInput {
-  todos: Todo[];
-}
-
-export interface ReadFileInput {
-  file_path: string;
-  offset?: number;
-  limit?: number;
-}
-
-export interface WriteFileInput {
-  file_path: string;
-  content: string;
-}
-
-export interface EditFileInput {
-  file_path: string;
-  old_string: string;
-  new_string: string;
-  replace_all?: boolean;
-}
-
-export interface TaskToolInput {
-  agent_name: string;
-  task: string;
+  model?: LanguageModelLike;
+  stateSchema?: StateSchema;
 }

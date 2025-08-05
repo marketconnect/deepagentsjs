@@ -6,6 +6,7 @@
  */
 
 import { ChatAnthropic } from "@langchain/anthropic";
+import { LanguageModelLike } from "./types.js";
 
 /**
  * Get the default model for Deep Agents
@@ -16,7 +17,7 @@ import { ChatAnthropic } from "@langchain/anthropic";
  *
  * @returns ChatAnthropic instance with default configuration
  */
-export function getDefaultModel(): ChatAnthropic {
+export function getDefaultModel(): LanguageModelLike {
   return new ChatAnthropic({
     model: "claude-sonnet-4-20250514",
     maxTokens: 4096,

@@ -2,7 +2,10 @@
 
 Using an LLM to call tools in a loop is the simplest form of an agent. This architecture, however, can yield agents that are "shallow" and fail to plan and act over longer, more complex tasks. Applications like "Deep Research", "Manus", and "Claude Code" have gotten around this limitation by implementing a combination of four things: a planning tool, sub agents, access to a file system, and a detailed prompt.
 
-deepagents is a TypeScript package that implements these in a general purpose way so that you can easily create a Deep Agent for your application.
+`deepagents` is a TypeScript package that implements these in a general purpose way so that you can easily create a Deep Agent for your application.
+
+> ![TIP]
+> Looking for the Python version of this package? See [here: hwchase17/deepagents](https://github.com/hwchase17/deepagents)
 
 **Acknowledgements**: This project was primarily inspired by Claude Code, and initially was largely an attempt to see what made Claude Code general purpose, and make it even more so.
 
@@ -14,16 +17,16 @@ yarn add deepagentsjs
 
 ## Usage
 
-(To run the example below, you will need to install tavily: `yarn add tavily`)
+(To run the example below, you will need to install tavily: `yarn add @langchain/tavily`)
 
 ```typescript
-import { TavilySearchResults } from "@langchain/community/tools/tavily_search";
+import { TavilySearch } from "@langchain/tavily";
 import { createDeepAgent } from "deepagentsjs";
 
 // Search tool to use to do research
-const internetSearch = new TavilySearchResults({
+const internetSearch = new TavilySearch({
   maxResults: 5,
-  apiKey: process.env.TAVILY_API_KEY,
+  tavilyApiKey: process.env.TAVILY_API_KEY,
 });
 
 // Prompt prefix to steer the agent to be an expert researcher
@@ -48,7 +51,7 @@ const result = await agent.invoke({
 });
 ```
 
-See `examples/research/research_agent.ts` for a more complex example.
+See `examples/research-agent.ts` for a more complex example.
 
 The agent created with `createDeepAgent` is just a LangGraph graph - so you can interact with it (streaming, human-in-the-loop, memory, studio) in the same way you would any LangGraph agent.
 
@@ -104,32 +107,32 @@ const agent = createDeepAgent({
 
 ### model (Optional)
 
-By default, deepagents will use "claude-sonnet-4-20250514". If you want to use a different model, you can pass a LangChain model object.
+By default, `deepagents` will use "claude-sonnet-4-20250514". If you want to use a different model, you can pass a LangChain model object.
 
 ## Deep Agent Details
 
-The below components are built into deepagents and helps make it work for deep tasks off-the-shelf.
+The below components are built into `deepagents` and helps make it work for deep tasks off-the-shelf.
 
 ### System Prompt
 
-deepagents comes with a built-in system prompt. This is relatively detailed prompt that is heavily based on and inspired by attempts to replicate Claude Code's system prompt. It was made more general purpose than Claude Code's system prompt. This contains detailed instructions for how to use the built-in planning tool, file system tools, and sub agents. Note that part of this system prompt can be customized
+`deepagents` comes with a built-in system prompt. This is relatively detailed prompt that is heavily based on and inspired by attempts to replicate Claude Code's system prompt. It was made more general purpose than Claude Code's system prompt. This contains detailed instructions for how to use the built-in planning tool, file system tools, and sub agents. Note that part of this system prompt can be customized
 
 Without this default system prompt - the agent would not be nearly as successful at going as it is. The importance of prompting for creating a "deep" agent cannot be understated.
 
 ### Planning Tool
 
-deepagents comes with a built-in planning tool. This planning tool is very simple and is based on ClaudeCode's TodoWrite tool. This tool doesn't actually do anything - it is just a way for the agent to come up with a plan, and then have that in the context to help keep it on track.
+`deepagents` comes with a built-in planning tool. This planning tool is very simple and is based on ClaudeCode's TodoWrite tool. This tool doesn't actually do anything - it is just a way for the agent to come up with a plan, and then have that in the context to help keep it on track.
 
 ### File System Tools
 
-deepagents comes with four built-in file system tools: `ls`, `edit_file`, `read_file`, `write_file`. These do not actually use a file system - rather, they mock out a file system using LangGraph's State object. This means you can easily run many of these agents on the same machine without worrying that they will edit the same underlying files.
+`deepagents` comes with four built-in file system tools: `ls`, `edit_file`, `read_file`, `write_file`. These do not actually use a file system - rather, they mock out a file system using LangGraph's State object. This means you can easily run many of these agents on the same machine without worrying that they will edit the same underlying files.
 
 Right now the "file system" will only be one level deep (no sub directories).
 
 These files can be passed in (and also retrieved) by using the `files` key in the LangGraph State object.
 
 ```typescript
-const agent = createDeepAgent({...});
+const agent = createDeepAgent({ ... });
 
 const result = await agent.invoke({
   messages: [...],
@@ -143,6 +146,6 @@ result.files;
 
 ### Sub Agents
 
-deepagents comes with the built-in ability to call sub agents (based on Claude Code). It has access to a general-purpose subagent at all times - this is a subagent with the same instructions as the main agent and all the tools that is has access to. You can also specify custom sub agents with their own instructions and tools.
+`deepagents` comes with the built-in ability to call sub agents (based on Claude Code). It has access to a general-purpose subagent at all times - this is a subagent with the same instructions as the main agent and all the tools that is has access to. You can also specify custom sub agents with their own instructions and tools.
 
 Sub agents are useful for "context quarantine" (to help not pollute the overall context of the main agent) as well as custom instructions.
