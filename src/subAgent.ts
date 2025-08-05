@@ -16,7 +16,6 @@ import { z } from "zod";
 import type { LanguageModelLike, SubAgent } from "./types.js";
 import { getDefaultModel } from "./model.js";
 import { writeTodos, readFile, writeFile, editFile, ls } from "./tools.js";
-import { DeepAgentState } from "./state.js";
 
 /**
  * Built-in tools map for tool resolution by name
@@ -40,19 +39,20 @@ export function createTaskTool<
   subagents: SubAgent[];
   tools: Record<string, StructuredTool>;
   model: LanguageModelLike;
-  stateSchema?: StateSchema;
+  stateSchema: StateSchema;
 }) {
-  const { subagents, tools = {}, model = getDefaultModel() } = inputs;
+  const {
+    subagents,
+    tools = {},
+    model = getDefaultModel(),
+    stateSchema,
+  } = inputs;
 
   // Create agents map from subagents array
   const agentsMap = new Map<string, SubAgent>();
   for (const subagent of subagents) {
     agentsMap.set(subagent.name, subagent);
   }
-
-  const stateSchema = inputs.stateSchema
-    ? DeepAgentState.extend(inputs.stateSchema.shape)
-    : DeepAgentState;
 
   // Combine built-in tools with provided tools for tool resolution
   const allTools = { ...BUILTIN_TOOLS, ...tools };

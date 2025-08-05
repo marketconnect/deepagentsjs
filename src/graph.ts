@@ -15,6 +15,7 @@ import { writeTodos, readFile, writeFile, editFile, ls } from "./tools.js";
 import type { CreateDeepAgentParams } from "./types.js";
 import type { StructuredTool } from "@langchain/core/tools";
 import { z } from "zod";
+import { DeepAgentState } from "./state.js";
 
 /**
  * Built-in tools that are always available in Deep Agents
@@ -41,8 +42,11 @@ export function createDeepAgent<
     instructions,
     model = getDefaultModel(),
     subagents = [],
-    stateSchema,
   } = params;
+
+  const stateSchema = params.stateSchema
+    ? DeepAgentState.extend(params.stateSchema.shape)
+    : DeepAgentState;
 
   // Combine built-in tools with provided tools
   const allTools: StructuredTool[] = [...BUILTIN_TOOLS, ...tools];
