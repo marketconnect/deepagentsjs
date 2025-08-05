@@ -1,72 +1,150 @@
-# deepagentsjs
+# 🧠🤖Deep Agents
 
-TypeScript implementation of Deep Agents - a library for building controllable AI agents with LangGraph.
+Using an LLM to call tools in a loop is the simplest form of an agent. This architecture, however, can yield agents that are "shallow" and fail to plan and act over longer, more complex tasks. Applications like "Deep Research", "Manus", and "Claude Code" have gotten around this limitation by implementing a combination of four things: a planning tool, sub agents, access to a file system, and a detailed prompt.
+
+![deep agent](https://github.com/langchain-ai/deepagents/blob/main/docs/assets/deep_agent.png?raw=true)
+
+deepagents is a TypeScript package that implements these in a general purpose way so that you can easily create a Deep Agent for your application.
+
+**Acknowledgements**: This project was primarily inspired by Claude Code, and initially was largely an attempt to see what made Claude Code general purpose, and make it even more so.
 
 ## Installation
 
 ```bash
-yarn install
-```
-
-## Build
-
-```bash
-yarn build
-```
-
-## Development
-
-```bash
-yarn dev
+yarn add deepagentsjs
 ```
 
 ## Usage
 
-### Basic Example
+(To run the example below, you will need to install tavily: `yarn add tavily`)
 
 ```typescript
-import { createDeepAgent } from 'deepagentsjs';
-import { tool } from '@langchain/core/tools';
-import { z } from 'zod';
+import { TavilySearchResults } from "@langchain/community/tools/tavily_search";
+import { createDeepAgent } from "deepagentsjs";
 
-// Create a custom tool
-const greetTool = tool(
-  async (input) => {
-    return `Hello, ${input.name}!`;
-  },
-  {
-    name: "greet",
-    description: "Greet someone by name",
-    schema: z.object({
-      name: z.string().describe("Name to greet"),
-    }),
-  }
-);
+// Search tool to use to do research
+const internetSearch = new TavilySearchResults({
+  maxResults: 5,
+  apiKey: process.env.TAVILY_API_KEY,
+});
+
+// Prompt prefix to steer the agent to be an expert researcher
+const researchInstructions = `You are an expert researcher. Your job is to conduct thorough research, and then write a polished report.
+
+You have access to a few tools.
+
+## \`internet_search\`
+
+Use this to run an internet search for a given query. You can specify the number of results, the topic, and whether raw content should be included.
+`;
 
 // Create the agent
 const agent = createDeepAgent({
-  tools: [greetTool],
-  instructions: "You are a helpful assistant that can greet people.",
+  tools: [internetSearch],
+  instructions: researchInstructions,
 });
 
-// Use the agent
+// Invoke the agent
 const result = await agent.invoke({
-  messages: [{ role: "user", content: "Say hello to Alice" }]
+  messages: [{ role: "user", content: "what is langgraph?" }]
 });
 ```
 
-### Parameters
+See `examples/research/research_agent.ts` for a more complex example.
 
-- `tools` - Array of custom tools to add to the agent
-- `instructions` - System instructions for the agent
-- `model` - Language model to use (defaults to configured model)
-- `subagents` - Array of sub-agents for task delegation
-- `stateSchema` - Custom state schema (optional)
+The agent created with `createDeepAgent` is just a LangGraph graph - so you can interact with it (streaming, human-in-the-loop, memory, studio) in the same way you would any LangGraph agent.
 
-## Scripts
+## Creating a custom deep agent
 
-- `yarn build` - Build the project
-- `yarn dev` - Start development mode with watch
-- `yarn lint` - Run linting
-- `yarn format` - Format code
-- `yarn typecheck` - Run type checking 
+There are three parameters you can pass to `createDeepAgent` to create your own custom deep agent.
+
+### tools (Required)
+
+The first argument to `createDeepAgent` is tools. This should be a list of LangChain tools. The agent (and any subagents) will have access to these tools.
+
+### instructions (Required)
+
+The second argument to `createDeepAgent` is instructions. This will serve as part of the prompt of the deep agent. Note that there is a built in system prompt as well, so this is not the entire prompt the agent will see.
+
+### subagents (Optional)
+
+A keyword-only argument to `createDeepAgent` is subagents. This can be used to specify any custom subagents this deep agent will have access to. You can read more about why you would want to use subagents [here](https://langchain-ai.github.io/deepagents/subagents/)
+
+`subagents` should be a list of objects, where each object follows this schema:
+
+```typescript
+interface SubAgent {
+  name: string;
+  description: string;
+  prompt: string;
+  tools?: string[];
+}
+```
+
+- **name**: This is the name of the subagent, and how the main agent will call the subagent
+- **description**: This is the description of the subagent that is shown to the main agent
+- **prompt**: This is the prompt used for the subagent
+- **tools**: This is the list of tools that the subagent has access to. By default will have access to all tools passed in, as well as all built-in tools.
+
+To use it looks like:
+
+```typescript
+const researchSubAgent = {
+  name: "research-agent",
+  description: "Used to research more in depth questions",
+  prompt: subResearchPrompt,
+};
+
+const subagents = [researchSubAgent];
+
+const agent = createDeepAgent({
+  tools,
+  instructions: prompt,
+  subagents
+});
+```
+
+### model (Optional)
+
+By default, deepagents will use "claude-sonnet-4-20250514". If you want to use a different model, you can pass a LangChain model object.
+
+## Deep Agent Details
+
+The below components are built into deepagents and helps make it work for deep tasks off-the-shelf.
+
+### System Prompt
+
+deepagents comes with a built-in system prompt. This is relatively detailed prompt that is heavily based on and inspired by attempts to replicate Claude Code's system prompt. It was made more general purpose than Claude Code's system prompt. This contains detailed instructions for how to use the built-in planning tool, file system tools, and sub agents. Note that part of this system prompt can be customized
+
+Without this default system prompt - the agent would not be nearly as successful at going as it is. The importance of prompting for creating a "deep" agent cannot be understated.
+
+### Planning Tool
+
+deepagents comes with a built-in planning tool. This planning tool is very simple and is based on ClaudeCode's TodoWrite tool. This tool doesn't actually do anything - it is just a way for the agent to come up with a plan, and then have that in the context to help keep it on track.
+
+### File System Tools
+
+deepagents comes with four built-in file system tools: `ls`, `edit_file`, `read_file`, `write_file`. These do not actually use a file system - rather, they mock out a file system using LangGraph's State object. This means you can easily run many of these agents on the same machine without worrying that they will edit the same underlying files.
+
+Right now the "file system" will only be one level deep (no sub directories).
+
+These files can be passed in (and also retrieved) by using the `files` key in the LangGraph State object.
+
+```typescript
+const agent = createDeepAgent({...});
+
+const result = await agent.invoke({
+  messages: [...],
+  // Pass in files to the agent using this key
+  // files: {"foo.txt": "foo", ...}
+});
+
+// Access any files afterwards like this
+result.files;
+```
+
+### Sub Agents
+
+deepagents comes with the built-in ability to call sub agents (based on Claude Code). It has access to a general-purpose subagent at all times - this is a subagent with the same instructions as the main agent and all the tools that is has access to. You can also specify custom sub agents with their own instructions and tools.
+
+Sub agents are useful for "context quarantine" (to help not pollute the overall context of the main agent) as well as custom instructions.
