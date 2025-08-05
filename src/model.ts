@@ -2,7 +2,7 @@
  * Model configuration for Deep Agents
  *
  * Default model configuration matching the Python implementation exactly.
- * Returns a ChatAnthropic instance configured with claude-sonnet-4-20250514 and maxTokens: 64000.
+ * Returns a ChatAnthropic instance configured with claude-sonnet-4-20250514 and maxTokens: 4096.
  */
 
 import { ChatAnthropic } from "@langchain/anthropic";
