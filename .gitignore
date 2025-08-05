@@ -19,6 +19,8 @@
 /build
 /dist
 **/dist
+/dist-examples
+**/dist-examples
 .turbo/
 
 # misc

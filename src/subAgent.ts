@@ -70,6 +70,7 @@ export function createTaskTool(
           if (resolvedTool) {
             subagentTools.push(resolvedTool);
           } else {
+            // eslint-disable-next-line no-console
             console.warn(
               `Warning: Tool '${toolName}' not found for agent '${agent_name}'`,
             );
