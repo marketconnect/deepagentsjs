@@ -9,7 +9,8 @@
 
 import { tool } from "@langchain/core/tools";
 import { ToolMessage } from "@langchain/core/messages";
-import { Command, getCurrentTaskInput, LangGraphRunnableConfig } from "@langchain/langgraph";
+import { Command, getCurrentTaskInput } from "@langchain/langgraph";
+import { ToolRunnableConfig } from "@langchain/core/tools";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { z } from "zod";
 import type { SubAgent } from "./types.js";
@@ -57,10 +58,9 @@ export function createTaskTool(
   return tool(
     async (
       input: { agent_name: string; task: string },
-      config: LangGraphRunnableConfig
+      config: ToolRunnableConfig
     ) => {
       const { agent_name, task } = input;
-      const toolCallId = config.metadata?.tool_call_id || 'unknown';
 
       // Get the subagent configuration
       const subagent = agentsMap.get(agent_name);
@@ -113,7 +113,7 @@ export function createTaskTool(
             messages: [
               new ToolMessage({
                 content: `Completed task '${task}' using agent '${agent_name}'. Result: ${JSON.stringify(result.messages?.slice(-1)[0]?.content || 'Task completed')}`,
-                tool_call_id: toolCallId as string,
+                tool_call_id: config.toolCall?.id as string,
               }),
             ],
           },
@@ -127,7 +127,7 @@ export function createTaskTool(
             messages: [
               new ToolMessage({
                 content: `Error executing task '${task}' with agent '${agent_name}': ${errorMessage}`,
-                tool_call_id: toolCallId as string,
+                tool_call_id: config.toolCall?.id as string,
               }),
             ],
           },

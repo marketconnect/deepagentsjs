@@ -6,9 +6,9 @@
  * Implements mock filesystem operations using state.files similar to Python version.
  */
 
-import { tool } from "@langchain/core/tools";
+import { tool, ToolRunnableConfig } from "@langchain/core/tools";
 import { ToolMessage } from "@langchain/core/messages";
-import { Command, getCurrentTaskInput, LangGraphRunnableConfig } from "@langchain/langgraph";
+import { Command, getCurrentTaskInput } from "@langchain/langgraph";
 import { z } from "zod";
 import { 
   WRITE_TODOS_DESCRIPTION, 
@@ -22,16 +22,14 @@ import type { DeepAgentState } from "./state.js";
  * Uses getCurrentTaskInput() instead of Python's InjectedState
  */
 export const writeTodos = tool(
-  (input, config: LangGraphRunnableConfig) => {
-    const toolCallId = config.metadata?.tool_call_id || 'unknown';
-    
+  (input, config: ToolRunnableConfig) => {
     return ({
       update: {
         todos: input.todos,
         messages: [
           new ToolMessage({
             content: `Updated todo list to ${JSON.stringify(input.todos)}`,
-            tool_call_id: toolCallId as string,
+            tool_call_id: config.toolCall?.id as string,
           }),
         ],
       },
@@ -133,11 +131,9 @@ export const readFile = tool(
  * Matches Python write_file function behavior exactly
  */
 export const writeFile = tool(
-  (input: { file_path: string; content: string }, config: LangGraphRunnableConfig) => {
+  (input: { file_path: string; content: string }, config: ToolRunnableConfig) => {
     const state = getCurrentTaskInput() as typeof DeepAgentState.State;
     const files = { ...(state.files || {}) };
-    const toolCallId = config.metadata?.tool_call_id || 'unknown';
-    
     files[input.file_path] = input.content;
 
     return new Command({
@@ -146,7 +142,7 @@ export const writeFile = tool(
         messages: [
           new ToolMessage({
             content: `Updated file ${input.file_path}`,
-            tool_call_id: toolCallId as string,
+            tool_call_id: config.toolCall?.id as string,
           }),
         ],
       },
@@ -174,11 +170,10 @@ export const editFile = tool(
       new_string: string; 
       replace_all?: boolean 
     }, 
-    config: LangGraphRunnableConfig
+    config: ToolRunnableConfig
   ) => {
     const state = getCurrentTaskInput() as typeof DeepAgentState.State;
     const mockFilesystem = { ...(state.files || {}) };
-    const toolCallId = config.metadata?.tool_call_id || 'unknown';
     const { file_path, old_string, new_string, replace_all = false } = input;
 
     // Check if file exists in mock filesystem
@@ -224,7 +219,7 @@ export const editFile = tool(
         messages: [
           new ToolMessage({
             content: `Updated file ${file_path}`,
-            tool_call_id: toolCallId as string,
+            tool_call_id: config.toolCall?.id as string,
           }),
         ],
       },
