@@ -2,9 +2,7 @@
 import { createDeepAgent } from "../src/index.js";
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
-import dotenv from "dotenv";
-
-dotenv.config();
+import "dotenv/config";
 
 type Topic = "general" | "news" | "finance";
 

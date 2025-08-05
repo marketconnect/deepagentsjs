@@ -7,9 +7,7 @@
 import { createDeepAgent } from "../src/graph.js";
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
-import dotenv from "dotenv";
-
-dotenv.config();
+import "dotenv/config";
 
 // Simple custom tool
 const helloTool = tool(

@@ -13,10 +13,10 @@ import { Command, getCurrentTaskInput } from "@langchain/langgraph";
 import { ToolRunnableConfig } from "@langchain/core/tools";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { z } from "zod";
-import type { SubAgent } from "./types.js";
-import { DeepAgentState } from "./state.js";
+import type { LanguageModelLike, SubAgent } from "./types.js";
 import { getDefaultModel } from "./model.js";
 import { writeTodos, readFile, writeFile, editFile, ls } from "./tools.js";
+import { DeepAgentState } from "./state.js";
 
 /**
  * Built-in tools map for tool resolution by name
@@ -34,17 +34,25 @@ const BUILTIN_TOOLS: Record<string, StructuredTool> = {
  * and returns a tool function that uses createReactAgent for sub-agents.
  * Uses Command for state updates and navigation between agents.
  */
-export function createTaskTool(
-  subagents: SubAgent[],
-  tools: Record<string, StructuredTool> = {},
-  model = getDefaultModel(),
-  stateSchema = DeepAgentState,
-) {
+export function createTaskTool<
+  StateSchema extends z.ZodObject<any, any, any, any, any>,
+>(inputs: {
+  subagents: SubAgent[];
+  tools: Record<string, StructuredTool>;
+  model: LanguageModelLike;
+  stateSchema?: StateSchema;
+}) {
+  const { subagents, tools = {}, model = getDefaultModel() } = inputs;
+
   // Create agents map from subagents array
   const agentsMap = new Map<string, SubAgent>();
   for (const subagent of subagents) {
     agentsMap.set(subagent.name, subagent);
   }
+
+  const stateSchema = inputs.stateSchema
+    ? DeepAgentState.extend(inputs.stateSchema.shape)
+    : DeepAgentState;
 
   // Combine built-in tools with provided tools for tool resolution
   const allTools = { ...BUILTIN_TOOLS, ...tools };
@@ -83,25 +91,23 @@ export function createTaskTool(
         const reactAgent = createReactAgent({
           llm: model,
           tools: subagentTools,
-          stateSchema: stateSchema,
+          stateSchema,
           messageModifier: subagent.prompt,
         });
 
         // Get current state for context
-        const currentState =
-          getCurrentTaskInput() as typeof DeepAgentState.State;
+        const currentState = getCurrentTaskInput<z.infer<typeof stateSchema>>();
 
         // Execute the subagent with the task
         const result = await reactAgent.invoke(
           {
+            ...currentState,
             messages: [
               {
                 role: "user",
                 content: task,
               },
             ],
-            todos: currentState.todos || [],
-            files: currentState.files || {},
           },
           config,
         );
@@ -109,8 +115,7 @@ export function createTaskTool(
         // Use Command for state updates and navigation between agents
         return new Command({
           update: {
-            todos: result.todos || currentState.todos,
-            files: result.files || currentState.files,
+            ...result,
             messages: [
               new ToolMessage({
                 content: `Completed task '${task}' using agent '${agent_name}'. Result: ${JSON.stringify(result.messages?.slice(-1)[0]?.content || "Task completed")}`,

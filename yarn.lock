@@ -106,7 +106,7 @@
   resolved "https://registry.yarnpkg.com/@humanwhocodes/retry/-/retry-0.4.3.tgz#c2b9d2e374ee62c586d3adbea87199b1d7a7a6ba"
   integrity sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==
 
-"@langchain/anthropic@^0.3.0":
+"@langchain/anthropic@^0.3.25":
   version "0.3.25"
   resolved "https://registry.yarnpkg.com/@langchain/anthropic/-/anthropic-0.3.25.tgz#399f34142e08f9807bc6d8462d2a01251fd20f23"
   integrity sha512-KipKY0njNps7bgINca1jVAShnOh/+MpfN/hB580TUVrnsT21e5bykfNjiGVZ1S1A/qdHSJsRMkie2igGij/acA==
@@ -114,7 +114,7 @@
     "@anthropic-ai/sdk" "^0.56.0"
     fast-xml-parser "^4.4.1"
 
-"@langchain/core@>=0.3.0", "@langchain/core@^0.3.0":
+"@langchain/core@>=0.3.0", "@langchain/core@^0.3.66":
   version "0.3.66"
   resolved "https://registry.yarnpkg.com/@langchain/core/-/core-0.3.66.tgz#cd20687f29a07148436cd8b72b88c66d076c500c"
   integrity sha512-d3SgSDOlgOjdIbReIXVQl9HaQzKqO/5+E+o3kJwoKXLGP9dxi7+lMyaII7yv7G8/aUxMWLwFES9zc1jFoeJEZw==
@@ -139,14 +139,7 @@
   dependencies:
     uuid "^10.0.0"
 
-"@langchain/langgraph-checkpoint@~0.0.17":
-  version "0.0.18"
-  resolved "https://registry.yarnpkg.com/@langchain/langgraph-checkpoint/-/langgraph-checkpoint-0.0.18.tgz#2f7a9cdeda948ccc8d312ba9463810709d71d0b8"
-  integrity sha512-IS7zJj36VgY+4pf8ZjsVuUWef7oTwt1y9ylvwu0aLuOn1d0fg05Om9DLm3v2GZ2Df6bhLV1kfWAM0IAl9O5rQQ==
-  dependencies:
-    uuid "^10.0.0"
-
-"@langchain/langgraph-sdk@~0.0.105", "@langchain/langgraph-sdk@~0.0.32":
+"@langchain/langgraph-sdk@~0.0.105":
   version "0.0.105"
   resolved "https://registry.yarnpkg.com/@langchain/langgraph-sdk/-/langgraph-sdk-0.0.105.tgz#cfed3483f9ae249d65813f68566667407e6e3c4e"
   integrity sha512-3DD1W1wnbP48807qq+5gY248mFcwwNGqKdmZt05P3zeLpfP5Sfm6ELzVvqHGpr+qumP0yGRZs/7qArYGXRRfcQ==
@@ -156,7 +149,7 @@
     p-retry "4"
     uuid "^9.0.0"
 
-"@langchain/langgraph@>=0.2.53":
+"@langchain/langgraph@>=0.2.53", "@langchain/langgraph@^0.4.2":
   version "0.4.2"
   resolved "https://registry.yarnpkg.com/@langchain/langgraph/-/langgraph-0.4.2.tgz#77e3ae59c465685b2ac2126077bbff17d95c3cff"
   integrity sha512-QAxeBIjamn2T2hlqCi+qC8k3Bv/bE/j0VGA+qR+z8NizSbGeD2uftqAYIrk3YtYLWIwk0kIICKcmTz8dKIWzog==
@@ -165,16 +158,6 @@
     "@langchain/langgraph-sdk" "~0.0.105"
     uuid "^10.0.0"
     zod "^3.25.32"
-
-"@langchain/langgraph@^0.2.53":
-  version "0.2.74"
-  resolved "https://registry.yarnpkg.com/@langchain/langgraph/-/langgraph-0.2.74.tgz#37367a1e8bafda3548037a91449a69a84f285def"
-  integrity sha512-oHpEi5sTZTPaeZX1UnzfM2OAJ21QGQrwReTV6+QnX7h8nDCBzhtipAw1cK616S+X8zpcVOjgOtJuaJhXa4mN8w==
-  dependencies:
-    "@langchain/langgraph-checkpoint" "~0.0.17"
-    "@langchain/langgraph-sdk" "~0.0.32"
-    uuid "^10.0.0"
-    zod "^3.23.8"
 
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
@@ -2114,7 +2097,7 @@ zod-to-json-schema@^3.22.3:
   resolved "https://registry.yarnpkg.com/zod-to-json-schema/-/zod-to-json-schema-3.24.6.tgz#5920f020c4d2647edfbb954fa036082b92c9e12d"
   integrity sha512-h/z3PKvcTcTetyjl1fkj79MHNEjm+HpD6NXheWjzOekY7kV+lwDYnHw+ivHkijnCSMz1yJaWBD9vu/Fcmk+vEg==
 
-zod@^3.23.8, zod@^3.25.32:
+zod@^3.25.32:
   version "3.25.76"
   resolved "https://registry.yarnpkg.com/zod/-/zod-3.25.76.tgz#26841c3f6fd22a6a2760e7ccb719179768471e34"
   integrity sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==
