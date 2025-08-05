@@ -39,7 +39,6 @@ const internetSearch = tool(
                 topic
             })
         });
-        console.log(query)
         if (!response.ok) {
             throw new Error(`Search failed: ${response.statusText}`);
         }
