@@ -1,17 +1,11 @@
 /**
-<<<<<<< HEAD
- * Simple test example for Deep Agents TypeScript
-=======
  * Simple test example for Deep Agents TypeScript with LangSmith tracing
->>>>>>> dd52831 (fix: update token count)
  */
 
 import { createDeepAgent } from './src/graph.js';
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
-<<<<<<< HEAD
-=======
 import { Client } from "langsmith";
 import dotenv from 'dotenv';
 
@@ -24,7 +18,6 @@ const client = new Client({
 
 // Set up tracing
 process.env.LANGCHAIN_TRACING_V2 = "true";
->>>>>>> dd52831 (fix: update token count)
 
 // Simple custom tool
 const helloTool = tool(
