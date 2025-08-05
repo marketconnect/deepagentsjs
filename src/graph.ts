@@ -1,6 +1,6 @@
 /**
  * Main createDeepAgent function for Deep Agents
- * 
+ *
  * Main entry point for creating deep agents with TypeScript types for all parameters:
  * tools, instructions, model, subagents, and stateSchema. Combines built-in tools with
  * provided tools, creates task tool using createTaskTool(), and returns createReactAgent
@@ -11,13 +11,7 @@ import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { createTaskTool } from "./subAgent.js";
 import { getDefaultModel } from "./model.js";
 import { DeepAgentState } from "./state.js";
-import { 
-  writeTodos, 
-  readFile, 
-  writeFile, 
-  editFile, 
-  ls 
-} from "./tools.js";
+import { writeTodos, readFile, writeFile, editFile, ls } from "./tools.js";
 import type { StateSchemaType, CreateDeepAgentParams } from "./types.js";
 import type { StructuredTool } from "@langchain/core/tools";
 
@@ -38,9 +32,9 @@ const BUILTIN_TOOLS: StructuredTool[] = [
  * and returns createReactAgent with proper configuration.
  * Ensures exact parameter matching and behavior with Python version.
  */
-export function createDeepAgent<T extends typeof DeepAgentState = typeof DeepAgentState>(
-  params: CreateDeepAgentParams<T> = {}
-) {
+export function createDeepAgent<
+  T extends typeof DeepAgentState = typeof DeepAgentState,
+>(params: CreateDeepAgentParams<T> = {}) {
   const {
     tools = [],
     instructions,
@@ -61,7 +55,12 @@ export function createDeepAgent<T extends typeof DeepAgentState = typeof DeepAge
       }
     }
 
-    const taskTool = createTaskTool(subagents, toolsMap, model as any, stateSchema);
+    const taskTool = createTaskTool(
+      subagents,
+      toolsMap,
+      model as any,
+      stateSchema,
+    );
     allTools.push(taskTool);
   }
 
@@ -78,5 +77,3 @@ export function createDeepAgent<T extends typeof DeepAgentState = typeof DeepAge
  * Default export for convenience
  */
 export default createDeepAgent;
-
-

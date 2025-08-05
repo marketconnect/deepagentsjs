@@ -1,6 +1,6 @@
 /**
  * TypeScript type definitions for Deep Agents
- * 
+ *
  * This file contains all the TypeScript interfaces and types that correspond
  * to the Python TypedDict and other type definitions. Defines all necessary
  * TypeScript interfaces and types including StateSchemaType, SubAgent, Todo,
@@ -9,7 +9,7 @@
 
 import type { BaseLanguageModelInterface } from "@langchain/core/language_models/base";
 import type { StructuredTool } from "@langchain/core/tools";
-import type { DeepAgentState } from './state.js';
+import type { DeepAgentState } from "./state.js";
 
 /**
  * SubAgent interface matching Python's TypedDict structure
@@ -23,13 +23,15 @@ export interface SubAgent {
 
 export interface Todo {
   content: string;
-  status: 'pending' | 'in_progress' | 'completed';
+  status: "pending" | "in_progress" | "completed";
 }
 
 /**
  * Type for state schema classes that extend DeepAgentState
  */
-export type StateSchemaType<T extends typeof DeepAgentState = typeof DeepAgentState> = T;
+export type StateSchemaType<
+  T extends typeof DeepAgentState = typeof DeepAgentState,
+> = T;
 
 /**
  * Extract the state type from a state schema
@@ -44,7 +46,9 @@ export type AnyStateSchema = StateSchemaType<any>;
 /**
  * Parameters for createDeepAgent function with TypeScript types
  */
-export interface CreateDeepAgentParams<T extends typeof DeepAgentState = typeof DeepAgentState> {
+export interface CreateDeepAgentParams<
+  T extends typeof DeepAgentState = typeof DeepAgentState,
+> {
   tools?: StructuredTool[];
   instructions?: string;
   model?: BaseLanguageModelInterface;
@@ -66,9 +70,12 @@ export type DeepAgentTool = StructuredTool;
 
 export type MockFileSystem = Record<string, string>;
 
-export type ReducerFunction<T> = (_prev: T | null | undefined, _next: T | null | undefined) => T;
+export type ReducerFunction<T> = (
+  _prev: T | null | undefined,
+  _next: T | null | undefined,
+) => T;
 
-export type TodoStatus = 'pending' | 'in_progress' | 'completed';
+export type TodoStatus = "pending" | "in_progress" | "completed";
 
 export interface WriteTodosInput {
   todos: Todo[];
@@ -96,4 +103,3 @@ export interface TaskToolInput {
   agent_name: string;
   task: string;
 }
-

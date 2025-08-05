@@ -1,6 +1,6 @@
 /**
  * State definitions for Deep Agents
- * 
+ *
  * TypeScript equivalents of the Python state classes using LangGraph's Annotation.Root() pattern.
  * Defines Todo interface and DeepAgentState using MessagesAnnotation as base with proper reducer functions.
  */
@@ -14,7 +14,7 @@ import type { Todo } from "./types.js";
  */
 export function fileReducer(
   left: Record<string, string> | null | undefined,
-  right: Record<string, string> | null | undefined
+  right: Record<string, string> | null | undefined,
 ): Record<string, string> {
   if (left == null) {
     return right || {};
@@ -31,7 +31,7 @@ export function fileReducer(
  */
 export function todoReducer(
   left: Todo[] | null | undefined,
-  right: Todo[] | null | undefined
+  right: Todo[] | null | undefined,
 ): Todo[] {
   if (right != null) {
     return right;
@@ -46,18 +46,16 @@ export function todoReducer(
 export const DeepAgentState = Annotation.Root({
   // Inherit all fields from MessagesAnnotation (messages channel with proper reducer)
   ...MessagesAnnotation.spec,
-  
+
   // Add todos channel - optional list of Todo items
   todos: Annotation<Todo[]>({
     reducer: todoReducer,
     default: () => [],
   }),
-  
+
   // Add files channel - optional dictionary of file paths to content
   files: Annotation<Record<string, string>>({
     reducer: fileReducer,
     default: () => ({}),
   }),
 });
-
-

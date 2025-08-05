@@ -1,6 +1,6 @@
 /**
  * Tool functions for Deep Agents
- * 
+ *
  * TypeScript versions of all tools using @langchain/core/tools tool() function.
  * Uses getCurrentTaskInput() for state access and returns Command objects for state updates.
  * Implements mock filesystem operations using state.files similar to Python version.
@@ -10,10 +10,10 @@ import { tool, ToolRunnableConfig } from "@langchain/core/tools";
 import { ToolMessage } from "@langchain/core/messages";
 import { Command, getCurrentTaskInput } from "@langchain/langgraph";
 import { z } from "zod";
-import { 
-  WRITE_TODOS_DESCRIPTION, 
-  EDIT_DESCRIPTION, 
-  TOOL_DESCRIPTION 
+import {
+  WRITE_TODOS_DESCRIPTION,
+  EDIT_DESCRIPTION,
+  TOOL_DESCRIPTION,
 } from "./prompts.js";
 import type { DeepAgentState } from "./state.js";
 
@@ -23,7 +23,7 @@ import type { DeepAgentState } from "./state.js";
  */
 export const writeTodos = tool(
   (input, config: ToolRunnableConfig) => {
-    return ({
+    return {
       update: {
         todos: input.todos,
         messages: [
@@ -33,18 +33,24 @@ export const writeTodos = tool(
           }),
         ],
       },
-    });
+    };
   },
   {
     name: "write_todos",
     description: WRITE_TODOS_DESCRIPTION,
     schema: z.object({
-      todos: z.array(z.object({
-        content: z.string().describe("Content of the todo item"),
-        status: z.enum(['pending', 'in_progress', 'completed']).describe("Status of the todo"),
-      })).describe("List of todo items to update"),
+      todos: z
+        .array(
+          z.object({
+            content: z.string().describe("Content of the todo item"),
+            status: z
+              .enum(["pending", "in_progress", "completed"])
+              .describe("Status of the todo"),
+          }),
+        )
+        .describe("List of todo items to update"),
     }),
-  }
+  },
 );
 
 /**
@@ -61,7 +67,7 @@ export const ls = tool(
     name: "ls",
     description: "List all files in the mock filesystem",
     schema: z.object({}),
-  }
+  },
 );
 
 /**
@@ -87,7 +93,7 @@ export const readFile = tool(
     }
 
     // Split content into lines
-    const lines = content.split('\n');
+    const lines = content.split("\n");
 
     // Apply line offset and limit
     const startIdx = offset;
@@ -113,17 +119,25 @@ export const readFile = tool(
       resultLines.push(`${lineNumber.toString().padStart(6)}	${lineContent}`);
     }
 
-    return resultLines.join('\n');
+    return resultLines.join("\n");
   },
   {
     name: "read_file",
     description: TOOL_DESCRIPTION,
     schema: z.object({
       file_path: z.string().describe("Absolute path to the file to read"),
-      offset: z.number().optional().default(0).describe("Line offset to start reading from"),
-      limit: z.number().optional().default(2000).describe("Maximum number of lines to read"),
+      offset: z
+        .number()
+        .optional()
+        .default(0)
+        .describe("Line offset to start reading from"),
+      limit: z
+        .number()
+        .optional()
+        .default(2000)
+        .describe("Maximum number of lines to read"),
     }),
-  }
+  },
 );
 
 /**
@@ -131,7 +145,10 @@ export const readFile = tool(
  * Matches Python write_file function behavior exactly
  */
 export const writeFile = tool(
-  (input: { file_path: string; content: string }, config: ToolRunnableConfig) => {
+  (
+    input: { file_path: string; content: string },
+    config: ToolRunnableConfig,
+  ) => {
     const state = getCurrentTaskInput() as typeof DeepAgentState.State;
     const files = { ...(state.files || {}) };
     files[input.file_path] = input.content;
@@ -155,7 +172,7 @@ export const writeFile = tool(
       file_path: z.string().describe("Absolute path to the file to write"),
       content: z.string().describe("Content to write to the file"),
     }),
-  }
+  },
 );
 
 /**
@@ -164,13 +181,13 @@ export const writeFile = tool(
  */
 export const editFile = tool(
   (
-    input: { 
-      file_path: string; 
-      old_string: string; 
-      new_string: string; 
-      replace_all?: boolean 
-    }, 
-    config: ToolRunnableConfig
+    input: {
+      file_path: string;
+      old_string: string;
+      new_string: string;
+      replace_all?: boolean;
+    },
+    config: ToolRunnableConfig,
   ) => {
     const state = getCurrentTaskInput() as typeof DeepAgentState.State;
     const mockFilesystem = { ...(state.files || {}) };
@@ -191,8 +208,13 @@ export const editFile = tool(
 
     // If not replace_all, check for uniqueness
     if (!replace_all) {
-      const escapedOldString = old_string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const occurrences = (content.match(new RegExp(escapedOldString, 'g')) || []).length;
+      const escapedOldString = old_string.replace(
+        /[.*+?^${}()|[\]\\]/g,
+        "\\$&",
+      );
+      const occurrences = (
+        content.match(new RegExp(escapedOldString, "g")) || []
+      ).length;
       if (occurrences > 1) {
         return `Error: String '${old_string}' appears ${occurrences} times in file. Use replace_all=True to replace all instances, or provide a more specific string with surrounding context.`;
       } else if (occurrences === 0) {
@@ -202,17 +224,23 @@ export const editFile = tool(
 
     // Perform the replacement
     let newContent: string;
-    
+
     if (replace_all) {
-      const escapedOldString = old_string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      newContent = content.replace(new RegExp(escapedOldString, 'g'), new_string);
+      const escapedOldString = old_string.replace(
+        /[.*+?^${}()|[\]\\]/g,
+        "\\$&",
+      );
+      newContent = content.replace(
+        new RegExp(escapedOldString, "g"),
+        new_string,
+      );
     } else {
       newContent = content.replace(old_string, new_string);
     }
 
     // Update the mock filesystem
     mockFilesystem[file_path] = newContent;
-    
+
     return new Command({
       update: {
         files: mockFilesystem,
@@ -230,10 +258,15 @@ export const editFile = tool(
     description: EDIT_DESCRIPTION,
     schema: z.object({
       file_path: z.string().describe("Absolute path to the file to edit"),
-      old_string: z.string().describe("String to be replaced (must match exactly)"),
+      old_string: z
+        .string()
+        .describe("String to be replaced (must match exactly)"),
       new_string: z.string().describe("String to replace with"),
-      replace_all: z.boolean().optional().default(false).describe("Whether to replace all occurrences"),
+      replace_all: z
+        .boolean()
+        .optional()
+        .default(false)
+        .describe("Whether to replace all occurrences"),
     }),
-  }
+  },
 );
-
