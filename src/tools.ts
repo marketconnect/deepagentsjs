@@ -15,7 +15,7 @@ import {
   EDIT_DESCRIPTION,
   TOOL_DESCRIPTION,
 } from "./prompts.js";
-import type { DeepAgentState } from "./state.js";
+import { DeepAgentStateType } from "./types.js";
 
 /**
  * Write todos tool - manages todo list with Command return
@@ -59,7 +59,7 @@ export const writeTodos = tool(
  */
 export const ls = tool(
   () => {
-    const state = getCurrentTaskInput() as typeof DeepAgentState.State;
+    const state = getCurrentTaskInput<DeepAgentStateType>();
     const files = state.files || {};
     return Object.keys(files);
   },
@@ -76,7 +76,7 @@ export const ls = tool(
  */
 export const readFile = tool(
   (input: { file_path: string; offset?: number; limit?: number }) => {
-    const state = getCurrentTaskInput() as typeof DeepAgentState.State;
+    const state = getCurrentTaskInput<DeepAgentStateType>();
     const mockFilesystem = state.files || {};
     const { file_path, offset = 0, limit = 2000 } = input;
 
@@ -149,7 +149,7 @@ export const writeFile = tool(
     input: { file_path: string; content: string },
     config: ToolRunnableConfig,
   ) => {
-    const state = getCurrentTaskInput() as typeof DeepAgentState.State;
+    const state = getCurrentTaskInput<DeepAgentStateType>();
     const files = { ...(state.files || {}) };
     files[input.file_path] = input.content;
 
@@ -189,7 +189,7 @@ export const editFile = tool(
     },
     config: ToolRunnableConfig,
   ) => {
-    const state = getCurrentTaskInput() as typeof DeepAgentState.State;
+    const state = getCurrentTaskInput<DeepAgentStateType>();
     const mockFilesystem = { ...(state.files || {}) };
     const { file_path, old_string, new_string, replace_all = false } = input;
 

@@ -6,11 +6,10 @@
  */
 
 import "@langchain/langgraph/zod";
-import { messagesStateReducer } from "@langchain/langgraph";
+import { MessagesZodState } from "@langchain/langgraph";
 import type { Todo } from "./types.js";
 import { withLangGraph } from "@langchain/langgraph/zod";
 import { z } from "zod";
-import { BaseMessage } from "@langchain/core/messages";
 
 /**
  * File reducer function that merges file dictionaries
@@ -47,12 +46,7 @@ export function todoReducer(
  * DeepAgentState using LangGraph's Annotation.Root() pattern
  * Extends MessagesAnnotation (equivalent to Python's AgentState) with todos and files channels
  */
-export const DeepAgentState = z.object({
-  messages: withLangGraph(z.custom<BaseMessage[]>(), {
-    reducer: { fn: messagesStateReducer },
-    jsonSchemaExtra: { langgraph_type: "messages" },
-    default: () => [],
-  }),
+export const DeepAgentState = MessagesZodState.extend({
   todos: withLangGraph(z.custom<Todo[]>(), {
     reducer: {
       schema: z.custom<Todo[]>(),

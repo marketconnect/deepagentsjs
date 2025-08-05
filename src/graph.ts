@@ -77,8 +77,3 @@ export function createDeepAgent<
     messageModifier: instructions,
   });
 }
-
-/**
- * Default export for convenience
- */
-export default createDeepAgent;
