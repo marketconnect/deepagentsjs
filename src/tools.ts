@@ -52,7 +52,7 @@ export const writeTodos = tool(
  * Equivalent to Python's ls function
  */
 export const ls = tool(
-  (_input: Record<string, never>) => {
+  () => {
     const state = getCurrentTaskInput() as typeof DeepAgentState.State;
     const files = state.files || {};
     return Object.keys(files);

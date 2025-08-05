@@ -36,7 +36,7 @@ const helloTool = tool(
 // Create the agent
 const agent = createDeepAgent({
   tools: [helloTool],
-  instructions: "You are a helpful assistant that can greet people and perform basic tasks. Use the hello tool to greet people. Greet someone as soon as you're given a message. And when you say hello use the write_file tool to write the message to a file.",
+  instructions: "You are a helpful assistant that can greet people and perform basic tasks. Use the hello tool to greet people. Greet someone as soon as you're given a message. And when you say hello use the write_file tool to write the message to a file. Then use the read_file tool to read the file back and show the contents.",
 });
 
 
@@ -53,7 +53,7 @@ async function testAgent() {
     const stream = await agent.stream(inputs, { streamMode: "values" });
 
     for await (const { messages } of stream) {
-    //   console.log("Messages:", messages);
+      console.log("Messages:", messages);
     }
   } catch (error) {
     console.error("❌ Error:", error);

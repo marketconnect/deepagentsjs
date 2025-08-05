@@ -86,7 +86,7 @@ export type DeepAgentTool = {
   name: string;
   description: string;
   schema: any;
-  func: (...args: any[]) => any;
+  func: () => any;
 };
 
 /**
@@ -97,7 +97,7 @@ export type MockFileSystem = Record<string, string>;
 /**
  * Reducer function type for state channels
  */
-export type ReducerFunction<T> = (left: T | null | undefined, right: T | null | undefined) => T;
+export type ReducerFunction<T> = (_prev: T | null | undefined, _next: T | null | undefined) => T;
 
 /**
  * Status type for todos
