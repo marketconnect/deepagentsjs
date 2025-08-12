@@ -7,7 +7,7 @@
  * with proper configuration. Ensures exact parameter matching and behavior with Python version.
  */
 
-import "@langchain/anthropic/zod";
+// import "@langchain/anthropic/zod";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { createTaskTool } from "./subAgent.js";
 import { getDefaultModel } from "./model.js";
