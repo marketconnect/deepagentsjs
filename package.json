@@ -1,6 +1,6 @@
 {
-  "name": "deepagentsjs",
-  "version": "0.0.0",
+  "name": "deepagents",
+  "version": "0.0.0-rc",
   "description": "Deep Agents - a library for building controllable AI agents with LangGraph",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
