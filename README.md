@@ -12,7 +12,7 @@ Using an LLM to call tools in a loop is the simplest form of an agent. This arch
 ## Installation
 
 ```bash
-yarn add deepagentsjs
+yarn add deepagents
 ```
 
 ## Usage
@@ -21,7 +21,7 @@ yarn add deepagentsjs
 
 ```typescript
 import { TavilySearch } from "@langchain/tavily";
-import { createDeepAgent } from "deepagentsjs";
+import { createDeepAgent } from "deepagents";
 
 // Search tool to use to do research
 const internetSearch = new TavilySearch({
