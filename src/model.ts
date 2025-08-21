@@ -9,7 +9,86 @@ import { ChatAnthropic } from "@langchain/anthropic";
 import { ChatOpenAI } from "@langchain/openai";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { HuggingFaceInference } from "@langchain/community/llms/hf";
+import { LLM, type BaseLLMParams } from "@langchain/core/language_models/llms";
 import type { LanguageModelLike, ModelConfig } from "./types.js";
+
+/**
+ * Dynamically imports the Hugging Face Transformers library.
+ * This is done to avoid making it a hard dependency for users who don't need it.
+ * @returns The pipeline function from the library.
+ */
+async function getHuggingFaceTransformers() {
+	try {
+		const { pipeline, env } = await import("@huggingface/transformers");
+		// Configure environment for browser-friendly behavior
+		(env as any).allowLocalModels = false; // Disallow access to local file system
+		(env as any).useBrowserCache = true; // Cache models in the browser's cache
+		return { pipeline };
+	} catch (e) {
+		throw new Error(
+			"The '@huggingface/transformers' package is required for the 'huggingface-transformers' provider. Please install it with `npm install @huggingface/transformers`.",
+		);
+	}
+}
+
+interface HuggingFaceTransformersLLMParams extends BaseLLMParams {
+	model?: string;
+	maxTokens?: number;
+}
+
+/**
+ * A custom LangChain LLM that uses the `@huggingface/transformers` library
+ * to run models directly in the browser.
+ */
+class HuggingFaceTransformersLLM
+	extends LLM
+	implements HuggingFaceTransformersLLMParams
+{
+	model: string;
+	maxTokens?: number;
+
+	private generator: any | null = null; // The pipeline function
+
+	constructor(fields?: HuggingFaceTransformersLLMParams) {
+		super(fields ?? {});
+		this.model = fields?.model ?? "Xenova/gpt2"; // A reasonable default for text generation
+		this.maxTokens = fields?.maxTokens;
+	}
+
+	_llmType(): string {
+		return "huggingface_transformers_js";
+	}
+
+	private async initializeGenerator() {
+		if (this.generator) {
+			return;
+		}
+		const { pipeline } = await getHuggingFaceTransformers();
+		this.generator = await pipeline("text-generation", this.model);
+	}
+
+	async _call(
+		prompt: string,
+		_options: this["ParsedCallOptions"],
+	): Promise<string> {
+		await this.initializeGenerator();
+
+		const result = await this.generator(prompt, {
+			max_new_tokens: this.maxTokens,
+			return_full_text: false,
+		});
+
+		if (
+			Array.isArray(result) &&
+			result[0] &&
+			typeof result[0].generated_text === "string"
+		) {
+			return result[0].generated_text;
+		}
+
+		throw new Error("Unexpected response format from Hugging Face pipeline.");
+	}
+}
 
 /**
  * Create a language model instance based on the provided configuration.
@@ -23,7 +102,7 @@ import type { LanguageModelLike, ModelConfig } from "./types.js";
 export function createModel(config: ModelConfig): LanguageModelLike {
 	const { provider } = config;
 	const maxTokens = config.maxTokens ?? 4096;
-	const apiKey = config.apiKey;
+	const apiKey = (config as any).apiKey;
 
 	switch (provider) {
 		case "anthropic":
@@ -46,9 +125,14 @@ export function createModel(config: ModelConfig): LanguageModelLike {
 			});
 		case "huggingface":
 			return new HuggingFaceInference({
-				model: config.model,
+				model: config.model as string,
 				apiKey,
 				maxTokens,
+			});
+		case "huggingface-transformers":
+			return new HuggingFaceTransformersLLM({
+				model: config.model,
+				maxTokens: config.maxTokens,
 			});
 		default:
 			// This case should be unreachable with TypeScript's discriminated union

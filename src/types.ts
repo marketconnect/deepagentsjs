@@ -96,4 +96,13 @@ export type ModelConfig =
 			model: string;
 			maxTokens?: number;
 			apiKey?: string;
+		}
+	| {
+			/**
+			 * Use a model from Hugging Face that runs directly in the browser
+			 * using the `@huggingface/transformers` library. No API key is needed.
+			 */
+			provider: "huggingface-transformers";
+			model?: string;
+			maxTokens?: number;
 		};
