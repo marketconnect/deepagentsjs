@@ -1,25 +1,68 @@
 /**
  * Model configuration for Deep Agents
  *
- * Default model configuration matching the Python implementation exactly.
- * Returns a ChatAnthropic instance configured with claude-sonnet-4-20250514 and maxTokens: 4096.
+ * This module provides functions for creating and configuring language models for Deep Agents.
+ * It supports various providers like Anthropic, OpenAI, Google Gemini, and Hugging Face.
  */
 
 import { ChatAnthropic } from "@langchain/anthropic";
-import { LanguageModelLike } from "./types.js";
+import { ChatOpenAI } from "@langchain/openai";
+import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { HuggingFaceInference } from "@langchain/community/llms/hf";
+import type { LanguageModelLike, ModelConfig } from "./types.js";
 
 /**
- * Get the default model for Deep Agents
+ * Create a language model instance based on the provided configuration.
+ * This function allows for easy instantiation of models from different providers
+ * without needing to import them directly. It's designed for use in browser
+ * environments where API keys are provided dynamically.
  *
- * Returns a ChatAnthropic instance configured exactly like the Python version:
- * - model: "claude-sonnet-4-20250514"
- * - maxTokens: 4096
- *
- * @returns ChatAnthropic instance with default configuration
+ * @param config The model configuration object.
+ * @returns A language model instance (`LanguageModelLike`).
+ */
+export function createModel(config: ModelConfig): LanguageModelLike {
+	const { provider } = config;
+	const maxTokens = config.maxTokens ?? 4096;
+	const apiKey = config.apiKey;
+
+	switch (provider) {
+		case "anthropic":
+			return new ChatAnthropic({
+				model: config.model ?? "claude-3-5-sonnet-20240620",
+				maxTokens,
+				apiKey,
+			});
+		case "openai":
+			return new ChatOpenAI({
+				model: config.model ?? "gpt-4o",
+				maxTokens,
+				apiKey,
+			});
+		case "gemini":
+			return new ChatGoogleGenerativeAI({
+				model: config.model ?? "gemini-1.5-flash",
+				maxOutputTokens: maxTokens,
+				apiKey,
+			});
+		case "huggingface":
+			return new HuggingFaceInference({
+				model: config.model,
+				apiKey,
+				maxTokens,
+			});
+		default:
+			// This case should be unreachable with TypeScript's discriminated union
+			throw new Error(`Unsupported model provider.`);
+	}
+}
+
+/**
+ * Throws an error indicating that a model must be explicitly provided.
+ * The default model has been removed to prevent reliance on environment variables
+ * for API keys, which is insecure in browser environments.
  */
 export function getDefaultModel(): LanguageModelLike {
-  return new ChatAnthropic({
-    model: "claude-sonnet-4-20250514",
-    maxTokens: 4096,
-  });
+	throw new Error(
+		"A model must be provided to createDeepAgent. There is no default model.\nTo fix, you can import and use the `createModel` function to configure a model.\n\nExample:\nimport { createDeepAgent, createModel } from 'deepagents';\n\nconst model = createModel({ provider: 'openai', apiKey: 'YOUR_API_KEY' });\nconst agent = createDeepAgent({ model });",
+	);
 }

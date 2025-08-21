@@ -67,3 +67,33 @@ export interface CreateTaskToolParams<
   model?: LanguageModelLike;
   stateSchema?: StateSchema;
 }
+
+/**
+ * Configuration for creating a language model.
+ * This is a discriminated union type based on the `provider`.
+ */
+export type ModelConfig =
+	| {
+			provider: "gemini";
+			model?: string;
+			maxTokens?: number;
+			apiKey?: string;
+		}
+	| {
+			provider: "openai";
+			model?: string;
+			maxTokens?: number;
+			apiKey?: string;
+		}
+	| {
+			provider: "anthropic";
+			model?: string;
+			maxTokens?: number;
+			apiKey?: string;
+		}
+	| {
+			provider: "huggingface";
+			model: string;
+			maxTokens?: number;
+			apiKey?: string;
+		};
